@@ -22,13 +22,12 @@ namespace Amaris.Services.Implementations
             _client = new HttpClient();
         }
 
-        async Task<Response<Employee>> IBaseService<Employee>.GetItem(long id)
+        public async Task<Response<Employee>> GetItem(long id)
         {
             var response = new Response<Employee>();
             try
             {
-                _client.BaseAddress = new Uri(_apiUrl.BaseUrl!);
-                var res = await _client.GetAsync(_apiUrl.APIVersion + _apiUrl.EmployeeEndpoint + id.ToString());
+                var res = await APIConnect(_apiUrl.APIVersion + _apiUrl.EmployeeEndpoint + id.ToString());
                 if (res.IsSuccessStatusCode)
                 {
                     var results = await res.Content.ReadAsStringAsync();
@@ -53,13 +52,12 @@ namespace Amaris.Services.Implementations
             return response;
         }
 
-        async Task<Response<Employee>> IBaseService<Employee>.GetItems(string param)
+        public async Task<Response<Employee>> GetItems(string param)
         {
             var response = new Response<Employee>();
             try
             {
-                _client.BaseAddress = new Uri(_apiUrl.BaseUrl!);
-                var res = await _client.GetAsync(_apiUrl.APIVersion + _apiUrl.EmployeesEndpoint);
+                var res = await APIConnect(_apiUrl.APIVersion + _apiUrl.EmployeesEndpoint);
                 if (res.IsSuccessStatusCode)
                 {
                     var results = await res.Content.ReadAsStringAsync();
@@ -85,6 +83,14 @@ namespace Amaris.Services.Implementations
                 response.Error = true;
             }
             return response;
+        }
+
+        public async Task<HttpResponseMessage> APIConnect(string request)
+        {
+
+            _client.BaseAddress = new Uri(_apiUrl.BaseUrl!);
+
+            return await _client.GetAsync(request);
         }
     }
 }
