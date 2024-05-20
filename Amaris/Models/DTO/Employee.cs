@@ -17,7 +17,7 @@
         /// <summary>
         /// Gets or sets the employee salary.
         /// </summary>
-        public double? Salary { get; set; }
+        public float? Salary { get; set; }
 
         /// <summary>
         /// Gets or sets the employee age.
@@ -33,7 +33,7 @@
         /// <summary>
         /// Gets the employee's annual salary.
         /// </summary>
-        public double AnnualSalary
+        public float AnnualSalary
         {
             get
             {
