@@ -1,4 +1,4 @@
-﻿namespace Amaris.Helpers.APIResponses
+﻿namespace Amaris.Helpers.APIResponse
 {
     public class GeneralAPIresponse
     {

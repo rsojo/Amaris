@@ -1,5 +1,4 @@
 ﻿using Amaris.Helpers.APIResponse;
-using Amaris.Helpers.APIResponses;
 using Amaris.Helpers.Configs;
 using Amaris.Helpers.Facades;
 using Amaris.Helpers.Mappers;
@@ -13,10 +12,14 @@ namespace Amaris.Services.Implementations
     public class EmployeeService : IEmployeeService
     {
         private readonly ApiUrl _apiUrl;
-        HttpClient client = new HttpClient();
-        public EmployeeService(IOptions<ApiUrl> apiUrl)
+        private readonly ILogger<EmployeeService> _logger;
+        private readonly HttpClient _client;
+
+        public EmployeeService(IOptions<ApiUrl> apiUrl, ILogger<EmployeeService> logger)
         {
             _apiUrl = apiUrl.Value;
+            _logger = logger;
+            _client = new HttpClient();
         }
 
         async Task<Response<Employee>> IBaseService<Employee>.GetItem(long id)
@@ -24,25 +27,27 @@ namespace Amaris.Services.Implementations
             var response = new Response<Employee>();
             try
             {
-                client.BaseAddress = new Uri(_apiUrl.BaseUrl!);
-                var res = await client.GetAsync(_apiUrl.APIVersion + _apiUrl.EmployeeEndpoint + id.ToString());
+                _client.BaseAddress = new Uri(_apiUrl.BaseUrl!);
+                var res = await _client.GetAsync(_apiUrl.APIVersion + _apiUrl.EmployeeEndpoint + id.ToString());
                 if (res.IsSuccessStatusCode)
                 {
-                    var results = res.Content.ReadAsStringAsync().Result;
-
+                    var results = await res.Content.ReadAsStringAsync();
                     var js = JsonConvert.DeserializeObject<GeneralAPIresponse>(results);
                     var data = EmployeeAPIMapper.MapEmployeeAPI(JsonConvert.DeserializeObject<EmployeeAPI>(js.data.ToString()));
                     response.Lst = new List<Employee>();
                     response.Lst.Add(data);
-
                 }
                 else
                 {
                     response.Error = true;
+                    _logger.LogError( "An error occurred while getting the employee item From de API.");
+                    response.Msg = res.ReasonPhrase;
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while getting the employee item.");
+                response.Msg = ex.Message;
                 response.Error = true;
             }
             return response;
@@ -53,11 +58,11 @@ namespace Amaris.Services.Implementations
             var response = new Response<Employee>();
             try
             {
-                client.BaseAddress = new Uri(_apiUrl.BaseUrl!);
-                var res = await client.GetAsync(_apiUrl.APIVersion + _apiUrl.EmployeesEndpoint);
+                _client.BaseAddress = new Uri(_apiUrl.BaseUrl!);
+                var res = await _client.GetAsync(_apiUrl.APIVersion + _apiUrl.EmployeesEndpoint);
                 if (res.IsSuccessStatusCode)
                 {
-                    var results = res.Content.ReadAsStringAsync().Result;
+                    var results = await res.Content.ReadAsStringAsync();
                     var js = JsonConvert.DeserializeObject<GeneralAPIresponse>(results);
                     var data = JsonConvert.DeserializeObject<List<EmployeeAPI>>(js.data.ToString());
                     response.Lst = new List<Employee>();
@@ -65,15 +70,18 @@ namespace Amaris.Services.Implementations
                     {
                         response.Lst.Add(EmployeeAPIMapper.MapEmployeeAPI(item));
                     }
-
                 }
                 else
                 {
                     response.Error = true;
+                    _logger.LogError("An error occurred while getting the employee items From de API.");
+                    response.Msg = res.ReasonPhrase;
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while getting the employee items.");
+                response.Msg = ex.Message;
                 response.Error = true;
             }
             return response;

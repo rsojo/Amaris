@@ -1,6 +1,7 @@
 using Amaris.Helpers.Configs;
 using Amaris.Services.Implementations;
 using Amaris.Services.Interfaces;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,8 +11,12 @@ builder.Services.AddControllersWithViews();
 // Add APIUrl to the services.
 builder.Services.Configure<ApiUrl>(builder.Configuration.GetSection("ApiUrl"));
 
-// Add EmployeeService as an implementarion.
-builder.Services.AddScoped<IEmployeeService, EmployeeService>(); ;
+// Add EmployeeService as an implementation.
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+
+// Add Logger configuration
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 
 var app = builder.Build();
 

@@ -38,6 +38,7 @@ namespace Amaris.Controllers
             }
             if (response.Error)
             {
+                _logger.LogError(response.Msg); // Log the error message
                 return RedirectToAction("Error", "Home");
             }
 
